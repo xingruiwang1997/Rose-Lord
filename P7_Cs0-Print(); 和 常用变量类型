@@ -1,3 +1,5 @@
+//这一P讲的是 常用变量类型。和 Print（）; 一个Debug用的语句。
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
