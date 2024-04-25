@@ -50,9 +50,9 @@ public class Test001 : MonoBehaviour
     UIntPtr A0101;
 
     //Float
-    float A0102 = 0;//(32)
+    float A0102 = 0f;//(32)
     double A0103 = 0;//(64)
-    Decimal A0104 = 0;//(128)//Laji
+    Decimal A0104 = 0m;//(128)//Laji
 
     void V001_PlayerDead()
     { 
