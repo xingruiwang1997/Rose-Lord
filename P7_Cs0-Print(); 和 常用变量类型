@@ -1,0 +1,77 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Test001 : MonoBehaviour
+{
+   //【这一部分是常用变量】
+    [SerializeField] string PlayerName = "AAA";
+    [SerializeField] int PlayerHealth = 20;
+    [SerializeField] byte PlayerLevel = 1; //Private 0 <=255
+    
+    [SerializeField] bool IsPlayerLive = true;//0=F; 1=T.
+    uint DeathCount = 0; //Private 0 > 4294967295
+    float EXP = 0;
+
+    void V001_InitialMessage()
+    { 
+        print("Game Start!");
+        print("string PlayerName = "+PlayerName);
+        print("int PlayerHealth = "+PlayerHealth);
+        print("byte PlayerLevel = "+PlayerLevel);
+    }
+  //【这一部分是不常用的变量】
+    //Int
+    //8
+    sbyte A001 = 0;//(8 +-) -128 >127
+    byte A002 = 0;//(8) 0 < 255 
+    //16
+    short A003 = 0;//(16 +-) -32768 = 2^15 > 32767 = 2^15-1
+    Int16 A0031 = 0;
+    ushort A004 = 0;//(16) 0 <65535 = 2^16-1
+    UInt16 A0041 = 0;
+    //32 Int
+    int A005 = 0;//(32 +-) -2147483648 > 2147483647
+    Int32 A0051 = 0;
+    uint A006 = 0;//(32) 0 > 4294967295
+    UInt32 A0061 = 0;
+    //64
+    long A007 = 0;//(64 +-) -9223372036854775808 > 9223372036854775807
+    Int64 A0071 = 0;
+    ulong A008 = 0;//(64) ) > 18446744073709551615
+    UInt64 A0081 = 0;
+    //Ptr???
+    nint A009 = 0;
+    IntPtr A0091;
+    nuint A010 = 0;
+    UIntPtr A0101;
+
+    //Float
+    float A0102 = 0;//(32)
+    double A0103 = 0;//(64)
+    Decimal A0104 = 0;//(128)//Laji
+
+    void V001_PlayerDead()
+    { 
+      if(PlayerHealth<=0 && IsPlayerLive)
+        { 
+            print("You Dead!");
+            IsPlayerLive = false;
+        }
+      else if (!IsPlayerLive && PlayerHealth>0)
+        { 
+            print("You Recovered!");
+            IsPlayerLive = true;
+        }
+    }//V002
+
+    void Start()
+    {
+        V001_InitialMessage();
+    }
+    void Update()
+    {
+        V001_PlayerDead();
+    }
+}
