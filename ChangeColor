@@ -1,0 +1,83 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class C001_ColorFlow : MonoBehaviour
+{
+    [SerializeField]GameObject A;
+    [SerializeField]Material B;
+    MeshRenderer []C;//Array 
+    void V001_InitialMeshRenderer()
+    { 
+        C=A.GetComponentsInChildren<MeshRenderer>();//s InChildren
+    }//V001_InitialMeshRenderer
+enum LSL_Input
+    { 
+        None=0,//
+        Mouse =1,
+        Ekey=2,
+        IsTick=3,
+        NonIsTick=4,
+    }
+
+    LSL_Input CurrentInput = LSL_Input.None;
+    [SerializeField] bool isTick = false;
+    void V002_IsCurrentInput()
+    { 
+        if(Input.GetMouseButtonDown(0))CurrentInput = LSL_Input.Mouse;
+        else if(Input.GetKeyDown(KeyCode.E))CurrentInput = LSL_Input.Ekey;
+        else if(isTick)CurrentInput = LSL_Input.IsTick;
+        else if(!isTick)CurrentInput = LSL_Input.NonIsTick;
+        //print(CurrentInput);
+    }//V002_IsCurrentInput
+Material DefaultMat;
+    byte IndexMat = 5;//0-5
+    void V003 ()
+    { 
+        foreach(var V in C) //MeshRenderer=var
+        {
+            V.material = DefaultMat;
+        }
+        C[IndexMat].material = B;
+        IndexMat++;
+        if(IndexMat>5) IndexMat = 0;
+    }//V003_ChangeColor !!!
+float LTime = 0;
+    [SerializeField]float WaitTime = 0.5f;
+    void V004_WaitTimer()
+        {
+        LTime += Time.deltaTime;//Ltime++ (s)
+        if(LTime>WaitTime) 
+        {V003();
+        LTime -=WaitTime;}
+        }//v004_Wait0.5s
+
+void V005_Input()
+    { 
+        switch(CurrentInput)
+            { 
+            case LSL_Input.Mouse:
+            if(Input.GetMouseButtonDown(0))V003();
+            break;
+            case LSL_Input.Ekey:
+            if(Input.GetKeyDown(KeyCode.E))V003();
+            break;
+            case LSL_Input.IsTick:
+            V004_WaitTimer();
+            break;
+            case LSL_Input.NonIsTick:
+            default:
+            break;
+            }
+    }//V005_
+    void Start()
+    {
+        V001_InitialMeshRenderer();
+        DefaultMat = C[0].material;
+    }
+    void Update()
+    {
+        V002_IsCurrentInput();//Judge Input
+        V005_Input();
+    }
+}
