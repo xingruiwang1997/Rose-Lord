@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class C001_ColorFlow : MonoBehaviour
 {
+//【在inspector里填入 需要的 prefab 和 Material。然后get到全体子物体的MeshRenderer 数组[]】
     [SerializeField]GameObject A;
     [SerializeField]Material B;
     MeshRenderer []C;//Array 
@@ -11,6 +12,7 @@ public class C001_ColorFlow : MonoBehaviour
     { 
         C=A.GetComponentsInChildren<MeshRenderer>();//s InChildren
     }//V001_InitialMeshRenderer
+//【自定义各种输入类型，包括鼠标，键盘E，自动变色，和停止自动变色功能】
 enum LSL_Input
     { 
         None=0,//
@@ -30,6 +32,7 @@ enum LSL_Input
         else if(!isTick)CurrentInput = LSL_Input.NonIsTick;
         //print(CurrentInput);
     }//V002_IsCurrentInput
+//【最关键的变色逻辑，在多处被调用】
 Material DefaultMat;
     byte IndexMat = 5;//0-5
     void V003 ()
@@ -42,6 +45,7 @@ Material DefaultMat;
         IndexMat++;
         if(IndexMat>5) IndexMat = 0;
     }//V003_ChangeColor !!!
+//【自动变色，0.5秒逻辑】
 float LTime = 0;
     [SerializeField]float WaitTime = 0.5f;
     void V004_WaitTimer()
@@ -51,7 +55,7 @@ float LTime = 0;
         {V003();
         LTime -=WaitTime;}
         }//v004_Wait0.5s
-
+//【最后整合一下，填入Update的东西】
 void V005_Input()
     { 
         switch(CurrentInput)
@@ -70,12 +74,13 @@ void V005_Input()
             break;
             }
     }//V005_
+//【Start和Update】
     void Start()
     {
         V001_InitialMeshRenderer();
         DefaultMat = C[0].material;
     }
-    void Update()
+    void Update()//【需要不停判断我们的输入类型，并根据输入类型，执行V005的命令】
     {
         V002_IsCurrentInput();//Judge Input
         V005_Input();
