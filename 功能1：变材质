@@ -26,8 +26,8 @@ enum LSL_Input
     [SerializeField] bool isTick = false;
     void V002_IsCurrentInput()
     { 
-        if(Input.GetMouseButtonDown(0))CurrentInput = LSL_Input.Mouse;
-        else if(Input.GetKeyDown(KeyCode.E))CurrentInput = LSL_Input.Ekey;
+        if(Input.GetMouseButtonDown(0)){CurrentInput = LSL_Input.Mouse;isTick=false; }//【加了IsTick=false】
+        else if(Input.GetKeyDown(KeyCode.E)){CurrentInput = LSL_Input.Ekey;isTick=false; }
         else if(isTick)CurrentInput = LSL_Input.IsTick;
         else if(!isTick)CurrentInput = LSL_Input.NonIsTick;
         //print(CurrentInput);
