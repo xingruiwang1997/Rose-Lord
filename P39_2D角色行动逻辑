@@ -6,7 +6,7 @@ using System;
 
 public class C001_CharacterMove : MonoBehaviour
 {
-    //V001_CharacterMove (Make Character Able to move WASD 
+    //V001_CharacterMove (Make Character Able to move WASD 【角色的WASD移动逻辑】
     [Header("float(s)")]
     [SerializeField] [Tooltip("❤ Character Movement Speed = 1.0f\n(Recommand Value: 5)")]float speed = 1.0f;//Character Movement Speed
     [SerializeField] [Tooltip("❤ The AD Horizontal Clamp Player can move = 45f/100")]float ClampAD1 = 45f/100;//45%
@@ -15,7 +15,7 @@ public class C001_CharacterMove : MonoBehaviour
         transform.Translate(UnityEngine.Input.GetAxis("Horizontal")*speed*Time.deltaTime,UnityEngine.Input.GetAxis("Vertical")*speed*Time.deltaTime,0);
         transform.position = new Vector3(Mathf.Clamp(transform.position.x,-ActualCameraAD,ActualCameraAD),transform.position.y,transform.position.z);//Mathf.Clamp
         }
-    //V002_InitializeCameraSize (Get the Orthographic Camera Size
+    //V002_InitializeCameraSize (Get the Orthographic Camera Size 【找到 Camera框框范围 的逻辑】
     float CameraWS;//must = after Game Start
     float CameraAD;//must = after Game Start
     float CameraAspect;//must = after Game Start
@@ -29,7 +29,7 @@ public class C001_CharacterMove : MonoBehaviour
      //ADClamp
       ActualCameraAD=CameraAD*ClampAD1;//45%
     }
-    //V003_CharacterWSClampLogic (Make Character Loop when go up&down
+    //V003_CharacterWSClampLogic (Make Character Loop when go up&down 【限制在Camera框框范围内的逻辑】
     //
     void V003_CharacterWSLoopLogic()
     { 
@@ -38,7 +38,7 @@ public class C001_CharacterMove : MonoBehaviour
         else if (transform.position.y<-CameraWS)
         transform.position = new Vector3(transform.position.x,CameraWS,0);
     }
-    //V004_Bullet (Instantiate Bullet Logic
+    //V004_Bullet (Instantiate Bullet Logic 【发射子弹逻辑】
     [Header("GameObject")]
     [SerializeField] [Tooltip("❤ Drag \"Bullet\" Prefab Here!!")]GameObject Bullet;//\"'
     void V004_SpawnActor()//Instantiate GameObject
