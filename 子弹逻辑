@@ -1,0 +1,54 @@
+using System.Collections;
+using System.Collections.Generic;
+using Unity.VisualScripting;
+using UnityEngine;
+
+public class Z4_C002_BulletLogic : MonoBehaviour
+{
+    //V001_BulletMove
+    [Header("float")]
+    [SerializeField] [Tooltip("❤ Control the bullet speed = 1.0f\n (Recommand value: 10)")] float speed = 1.0f;
+        /*Vector3.up (0,1,0) Y
+          Vector3.down (0,-1,0) Y
+          Vector3.right (1,0,0) X
+          Vector3.left (-1,0,0) X
+          Vector3.forward (0,0,1) Z
+          Vector3.back (0,0,-1) Z
+         */
+    void V001_BulletMove()
+    { 
+        transform.Translate(Vector3.up*Time.deltaTime*speed);
+    }
+    //V002_LifeSpan (2.0f
+    //
+    void V002_LifeSpan()
+    { 
+        Destroy(this.gameObject,2f+AS.clip.length);
+    }
+    //OnTriggerEnter2D + AudioSource
+    [Header("AudioSource")]
+    [SerializeField] [Tooltip("❤Please drag the \"Audio Source\" component to here!!")]AudioSource AS;
+    [SerializeField] [Tooltip("❤Please drag the \"Audio Source\" component to here!!")]AudioSource AS2;
+    bool isHeat=false;
+    //OnTriggerEnter2D Exit Stay   //1+RigidBody2D(Gravity=0) 2Collider2D+1Trigger
+    //OnCollisionEnter2D Exit Stay //1+RigidBody2D(Gravity=0) 2Collider2D(Tan Fei
+    private void OnTriggerEnter2D(Collider2D V)
+    {
+      //print(V.gameObject.name);  
+      if(V.gameObject.CompareTag("LSL_Monster")&&!isHeat)
+        { 
+            Destroy(V.gameObject);
+            AS.Play();AS2.Play();
+            isHeat=true;
+            this.GetComponent<SpriteRenderer>().enabled = false;
+        }
+    }
+    void Start()
+    {
+    }
+    void Update()
+    {
+        V001_BulletMove();
+        V002_LifeSpan();
+    }
+}
