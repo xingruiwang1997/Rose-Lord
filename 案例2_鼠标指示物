@@ -1,0 +1,47 @@
+using System.Collections;
+using System.Collections.Generic;
+using Unity.VisualScripting;
+using UnityEngine;
+
+public class Z6_MousePlace : MonoBehaviour
+{
+    //Void1_MouseFollow + Cursor Invisible UI跟随鼠标 并消除鼠标的逻辑
+    //
+    void V001_MouseFollow()
+    { 
+      transform.position = Input.mousePosition;//My UI position UI位置追踪鼠标
+      Cursor.visible = false;//Make Cursor Invisible 鼠标不可见 处理
+    }
+    //Void2_MouseCursor Camera Position + Void3 == Set mouse indicator Get到鼠标在Camera中的坐标
+    [Header("AudioSource")]
+    [SerializeField] [Tooltip("❤Please drag the \"Audio Source\" component to here!!")]AudioSource AS;
+    Vector3 PositionOriginal;
+    Vector3 PositionActual;
+    void V002_MouseCursor()//Get mouse onScreen Position
+    { 
+        PositionOriginal=Camera.main.ScreenToWorldPoint(Input.mousePosition);//x,y找到鼠标位置
+        PositionActual=new Vector3 (PositionOriginal.x,PositionOriginal.y,0);//并清零Z值
+    }
+    //Void3_生成鼠标指示物的逻辑
+    [Header("GameObject")]
+    [SerializeField] [Tooltip("❤Drag \"Place\" Prefab Here!!\n把我的鼠标指示物Prefab拖入")]GameObject Gobj;//My Prefab Place
+    public GameObject GobjIns;//PUBLIC 这个必须public，因为我的主角player需要调用到这个指示物的值 初始为null，玩家点击画面后被生成
+    void V003_SpawnActor() 
+    { 
+        if(Input.GetMouseButtonDown(0))
+        {
+        AS.Play();//sound
+            if(GobjIns==null)//default==null 指示物不存在则生成指示物，否则仅移动指示物位置
+            GobjIns=Instantiate (Gobj,PositionActual,Quaternion.identity);//place at cursor position
+            else
+            GobjIns.transform.position=PositionActual;
+        }
+    }
+ 
+    void Update()
+    {
+      V001_MouseFollow();
+      V002_MouseCursor();
+      V003_SpawnActor();
+    }
+}
