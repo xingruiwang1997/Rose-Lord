@@ -1,0 +1,49 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class C_3_1_CharacterMovement : MonoBehaviour
+{
+    //Player Movement 移动逻辑
+    [Header("C Sharp: in Scene")]
+    [SerializeField] 
+    [Tooltip("❤ Darg the scene gameobject that has\"Z6_MousePlace\"in it\n把场景中安装了Z6_MousePlace的物体拖入，这里是我的Canvas里的一个UI图标")]
+    Z6_MousePlace CZ6;//Get My Another C Script
+
+    [Header("float: the movement speed")]
+    [Tooltip("❤ The \"Core\" movement speed\n决定了物体核心的移动速度，推荐值1f")]
+    [SerializeField] float speed=1.0f;//1
+
+    [Header("GameObject & 2 float: about the Player Size")]
+    [SerializeField] 
+    [Tooltip("❤ [Gameobject]Drag the Player2 Prefab here!!\n这里填入主角外面的那一圈范围Prefab")]
+    GameObject Obj2;
+    [SerializeField] 
+    [Tooltip("❤ [float]Decide the Player2 follow Core Speed!\n决定了外面圈的跟随核心的速度，推荐值10f")]
+    float speed2=10.0f;
+    [SerializeField] 
+    [Tooltip("❤ [float]Decide the Player2 self Rotation Speed!\n决定了外面圈的自旋速度，推荐值1f")]
+    float speed3=1.0f;
+    void V001_Movement()
+    {
+        if(CZ6.GobjIns!=null)//When Cursor indicator Exist 当鼠标指示物存在的时候
+        {
+            this.transform.position = Vector3.Lerp(transform.position,CZ6.GobjIns.transform.position,Time.deltaTime*speed);//本地位置到指示物位置
+            Obj2.transform.position = Vector3.Lerp(Obj2.transform.position,this.transform.position,Time.deltaTime*speed2);//本地到Core的位置
+        }
+    }
+    //Player Rotation 旋转逻辑
+    //旋转逻辑
+    void V006_LookAtOnlyzAxis(Vector3 P1target,Vector3 P2Self,GameObject R)//lookat();3D 2D LOOKAT自旋逻辑
+    {
+      Vector3 Dis = P1target-P2Self;
+      Dis.Normalize();
+      float Z= (Mathf.Atan2(Dis.y,Dis.x)*Mathf.Rad2Deg)-90;
+      R.transform.rotation=Quaternion.Lerp(R.transform.rotation,Quaternion.Euler(0,0,Z),Time.deltaTime*speed3);//Quaternion.lerp
+    }
+    void Update()
+    {
+        V001_Movement();
+        if (CZ6.GobjIns != null) {V006_LookAtOnlyzAxis(CZ6.GobjIns.transform.position,Obj2.transform.position,Obj2);}//When Cursor indicator Exist 当鼠标指示物存在的时候
+    }
+}
