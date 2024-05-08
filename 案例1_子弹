@@ -1,0 +1,72 @@
+using System.Collections;
+using System.Collections.Generic;
+using Unity.VisualScripting;
+using UnityEngine;
+
+ //【本脚本 放在了Prefab 子弹 里面】当场景中角色射击时，会自动生成子弹Prefab，并触发此脚本
+public class Z4_C002_BulletLogic : MonoBehaviour
+{
+    //V001_BulletMove 子弹前进逻辑
+    [Header("float: for Bullet Speed")]
+    [SerializeField] 
+    [Tooltip("❤ Control the bullet speed = 1.0f\n (Recommand value: 10)\n 子弹发射速度，推荐值10f")] 
+    float speed = 1.0f;
+    void V001_BulletMove()//子弹持续不断移动逻辑
+    { 
+        transform.Translate(Vector3.up*Time.deltaTime*speed);
+    }
+    //V002_LifeSpan (2.0f MAX + AudioSound.length 子弹生命周期
+    //
+    void V002_LifeSpan()//角色生命周期，2秒+音效时长
+    { 
+        Destroy(this.gameObject,2.2f+AS2.clip.length);
+    }
+    //【独立Void】OnTriggerEnter2D + AudioSource //Cililder 2D碰撞体逻辑 这里使用了2个音效，合成1个
+    [Header("AudioSource: 2 AudioSource Mixed to 1\n(这里使用了2个音效，合二为一)")]
+    [SerializeField] 
+    [Tooltip("❤Please drag the \"Audio Source\" component to here!!\n把下面的音频文件拖到这里去\n(AudioClip里记得填入声音)")]
+    AudioSource AS1;
+    [SerializeField] 
+    [Tooltip("❤Please drag the \"Audio Source\" component to here!!\n把下面的音频文件拖到这里去\n(AudioClip里记得填入声音)")]
+    AudioSource AS2;
+    bool isHeat=false;//只允许子弹执行1次逻辑
+    [Header("Prefab: The blood Prefab")]
+    [SerializeField] 
+    [Tooltip("❤ Drag \"Blood\" Prefab Here!!\n拖入血液图像的Prefab")]
+    GameObject Blood;//
+    [Header("float: for Rotation and Force")]
+    [SerializeField] 
+    [Tooltip("❤Control the mass and force of my bullet\n (Recommand value: 500.0f)\n决定了子弹撞击敌人时赋予的力，影响击退距离，推荐值500f")]
+    float ForceValue = 500.0f;
+    [SerializeField] 
+    [Tooltip("❤Control how far the Blood will go\n (Recommand value: 2.3)\n决定了血液喷溅距离，推荐值2.3f")]
+    float BloodSpalishValue = 2.3f;
+    private void OnTriggerEnter2D(Collider2D V)
+    {
+      //print(V.gameObject.name);  
+      if(V.gameObject.CompareTag("LSL_Monster")&&!isHeat)//判断物体Tag，以及子弹的一次性逻辑
+        { 
+            //RigidBody & AddForce Get到RigidBody2D后，根据方向施加1个力
+            Rigidbody2D RB = V.gameObject.GetComponent<Rigidbody2D>();
+            Vector2 Dis = V.gameObject.transform.position-this.transform.position;
+            Dis.Normalize();//
+            RB.AddForce(Dis*ForceValue);
+            //ADD BLOOD to V's position 生成血液，并决定血液的喷溅方向
+            Vector3 LocalOffset = this.transform.up * BloodSpalishValue;//vector.up Position+2.3f  
+            Vector3 BloodPosition = this.transform.position + LocalOffset;
+            Instantiate(Blood,BloodPosition,this.transform.rotation); //Destroy
+            //Destroy Actor 销毁物体
+            Destroy(V.gameObject,0.15f);
+            //ADD SoundFX 音效
+            AS1.Play();AS2.Play();
+            //Disable this. 关闭渲染，等待本脚本生命周期结束
+            isHeat=true;
+            this.GetComponent<SpriteRenderer>().enabled = false;
+        }
+    }
+    void Update()
+    {
+        V001_BulletMove();
+        V002_LifeSpan();
+    }
+}
