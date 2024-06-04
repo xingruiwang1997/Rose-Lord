@@ -1,0 +1,107 @@
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class C001_Health : MonoBehaviour
+{
+    [SerializeField] GameObject Canvas;//UI 画布
+    [SerializeField] GameObject UI001_Heart;//UI Imgae 爱心血上限UI 的 Prefab
+    [SerializeField][Range(1, 20)]int V1_BeginHeart=3;//初始只想给3个心 [V1_初始的爱心数量]int 
+    [SerializeField] int V2_MaxPerRow=10;//[V2_一行最多的爱心数量]int
+    [SerializeField] float V3_Xoffset = 109;//[V3 X偏移量]float
+    [SerializeField] float V4_Yoffset = -88;//[V4_Y偏移量]float
+    List<GameObject> ExistHeart = new List<GameObject>();//放爱心Prefab的数组
+
+    //需要填入的V2：是我们生成心的数量F1_HeartNumber
+    public void V001_AddHeart()//代表我们的生成心的数量 爱心=血上限
+    {//[这个方法可以在各种地方去调用]
+        if (ExistHeart.Count < 20) //如果我们有20个prefab，那么这个void就作废了
+            { 
+      GameObject V= Instantiate(UI001_Heart,Canvas.transform);//我这样子生成一开始就是Canvas的子物体
+      ExistHeart.Add(V);//[0]把生成的GameObject加入数组
+      int i = ExistHeart.IndexOf(V); // 获取物体在数组中的索引 0，1，2，3，4
+      RectTransform RTF = ExistHeart[i].GetComponent<RectTransform>();
+      int Xrow = i%V2_MaxPerRow;//5/10 5  16/10 6 取余，计算是第几个
+      int Yrow = i/V2_MaxPerRow;//3/10 0.3=0; 16/10=1.6 =1. 小数取整//计算换行数，计算Y在第几行
+      RTF.anchoredPosition += new Vector2(Xrow*V3_Xoffset, Yrow*V4_Yoffset);
+      MaxHealth=ExistHeart.Count*HealthperHeart;//重新计算血上限
+      //currentHealth = MaxHealth;//顺便补满血
+      UpdateUI();
+            }
+    }
+
+    public void V001_DestoryHeart() //较少血上限的方法
+    { 
+      if(ExistHeart.Count>1)//有血量的话，ExistHeart.Count=1；如果我有一个爱心的话,那么这个方法作废
+        { 
+          Destroy(ExistHeart[ExistHeart.Count-1]);//消除GameObject list0 [0]
+          ExistHeart.RemoveAt(ExistHeart.Count - 1);//从List数组里面也把它删掉[0]
+          MaxHealth=ExistHeart.Count*HealthperHeart;//重新计算血上限
+          if (currentHealth > MaxHealth) {currentHealth = MaxHealth;}//如果当前血量大于血上限，则扣除血量到 血上限
+        }
+    }
+    //血上限 20
+    //血量 100*20 =2000
+    [SerializeField] int HealthperHeart=100;//一颗心代表100滴血
+    float currentHealth;//当前血量
+    float MaxHealth;//血上限
+    [SerializeField] float AddAmount=10;//每一次回血的回血值
+    [SerializeField] float MinusAmount=10;//每一次收到攻击减少的值
+    
+    public void V002_AddHealth()
+    { 
+        currentHealth+=AddAmount;
+        currentHealth=Mathf.Clamp(currentHealth,0,MaxHealth);//Clamp，去限制这个值的范围，在0到血上限中间
+        print(currentHealth);
+        UpdateUI();
+    }
+
+    public void V002_MinusHealth()
+    { 
+        currentHealth-=AddAmount;
+        currentHealth=Mathf.Clamp(currentHealth,0,MaxHealth);
+        print(currentHealth);
+        UpdateUI();
+    }
+
+    [SerializeField] List<Sprite> HeartUISprite = new List<Sprite>();//[0] 空爱心 2=半个爱心 4 满爱心
+    void UpdateUI()
+    { 
+        //full的意思是，我们有多少颗满血的爱心
+        int full=(int)currentHealth/HealthperHeart;//满血心数量 300/100=3 说明我有3个心 299/100=2.XXX 0.1.2 [3]  299 0,1 [2]
+        float HalfHeartVolume =currentHealth%HealthperHeart;  //血上限1000， 当前血量299.2颗满的爱心 3残血爱心 count3[3-1]
+        //满血的心的UI=[4]
+        for (int i = 0;i<full;i++)
+        {
+            Image IMG =ExistHeart[i].GetComponent<Image>();
+            IMG.sprite = HeartUISprite[4];//把当前的sprite切换成我们满血的sprite
+        }
+        //如果满心小于 心心数量 
+        if (full < ExistHeart.Count) //这里的if语句是为了避免满血状态下调用ExistHeart[full]出错
+            {
+        int Index = HalfHeartVolume switch//计算残血量 因为sprite分成了5个，所以我们有5个switch
+        {
+            > 75 => 4,//这样子就算血被暗戳戳扣掉了一点，显示也是满血，直到值<75
+            > 50 => 3,
+            > 25 => 2,
+            > 0 => 1,
+            _ => 0
+        };
+        Image IMG2 =ExistHeart[full].GetComponent<Image>();
+        IMG2.sprite = HeartUISprite[Index];
+
+        for (int i=full+1; i<ExistHeart.Count ; i++)
+    {
+        Image IMG3 =ExistHeart[i].GetComponent<Image>();
+        IMG3.sprite = HeartUISprite[0];
+    }
+        }
+    }
+    
+    void Start()//游戏开始的时候
+    { 
+        for(int i = 0; i < V1_BeginHeart; i++) {V001_AddHeart();}//先生成初始的血量
+        currentHealth=MaxHealth;//计算一下血量
+        UpdateUI();//更新UI
+    }
+}
