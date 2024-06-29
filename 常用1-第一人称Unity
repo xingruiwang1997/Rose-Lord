@@ -1,0 +1,115 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class C_CharacterController : MonoBehaviour
+{
+    //【1】WASD移动的逻辑+跳跃的逻辑+重力的逻辑 + 鼠标X轴转方向的 语句
+    CharacterController CC; //调用到CharacterController组件。
+    [Header("float:这里自定义一个物体移动的速度，默认5f")]
+    [SerializeField] float Speed = 5f;//自定义一个速度值。
+    [Header("float:自己去定义一个弹跳的力的大小")]
+    [SerializeField] float JumpSpeed = 5f;//自定义一个 跳跃的大小。
+    [Header("这个只是代替Debug用的，用来看Y轴分量的值，不许改动")]
+    [SerializeField]float Y;//定义CC.MOVE 移动时候的Y值的分量，因为要加入跳跃 和 假物理 所以会比较麻烦
+    //这个是CC 移动的逻辑
+    void V001_CharacterController()//第一人称 使用给 挂了Character Controller Component的空物体，所以没有Collider
+    { 
+        //[1]加入手动的物理系统
+        bool IsOnGround = CC.isGrounded;//判断物体是否在地面上？ 
+        if(IsOnGround){Y=-0.5f;
+            //[2] 跳跃系统 在地面上的时候可以执行跳跃输入
+            if (Input.GetKeyDown(KeyCode.Space)) {Y=JumpSpeed;}}//如果在地面上的话，那么就 普通重力，模拟一下摩擦力
+        Y += Time.deltaTime*-9.81f;//不然的话，就不停的加重Y值  V=gt 计算物体下落的速度
+        //[3]正常的WASD移动 系统
+        float T = Time.deltaTime; //速度
+        float AD =Input.GetAxis("Horizontal"); //AD输入值
+        float WS =Input.GetAxis("Vertical"); //WS输入值
+        Vector3 WASD = new Vector3 (AD*Speed,Y,WS*Speed);
+        WASD=this.transform.TransformDirection(WASD);//这个是给鼠标移动用的，鼠标X轴移动的时候，我的角色的正方向也跟着一起移动的方法
+        CC.Move(WASD*T);//走到边缘不会掉下去，所以需要手动的物理
+    }
+
+    //【2】鼠标转动视角的逻辑
+    [Header("float:鼠标灵敏度")]
+    [SerializeField] float MouseSensitivity = 1f;//鼠标灵敏度
+    float Vx=0;
+    void V002_MouseRotation()
+    {
+        //this物体的朝向发生变化
+        float MouseX = Input.GetAxis("Mouse X");
+        Vector3 RotateX = transform.localEulerAngles;
+        RotateX.y+=MouseX*MouseSensitivity;
+        this.transform.localEulerAngles = RotateX;//设定this的Euler的V3的旋转角度
+        //Camera发生变化，物体本身不变
+        float MouseY = Input.GetAxis("Mouse Y");
+        Vx -= MouseY*MouseSensitivity;
+        Vx=Mathf.Clamp(Vx,-89f,89f);//为了限制鼠标的转动视角，看到脚或者，看到天
+        Camera.main.transform.localRotation=Quaternion.Euler(Vx,0,0);//去改变MainCamera的旋转角
+    }
+
+    //【3】进入物理系统的方法
+    [Header("float:对他人施加的物理力度")]
+    [SerializeField] float PushPower = 1f;//对他人施加的物理力度
+    void OnControllerColliderHit(ControllerColliderHit HIT) //一个独立于start 和 update 之外的独立void
+    {
+        if(HIT.gameObject.CompareTag("MXXS_Physics"))//手动去给有rigidbody的物体添加一个tag
+        { 
+        Rigidbody RB = HIT.gameObject.GetComponent<Rigidbody>();  //这里的RB是Hit的RB 对面的RB
+           if(RB==null || RB.isKinematic) {return;}
+           Vector3 PushDirection = new Vector3(HIT.moveDirection.x,0,HIT.moveDirection.z);
+           RB.velocity=PushDirection*PushPower;
+        }
+    }
+
+    //【4】本物体的RayCast 和其他物体交互的方式
+    [Header("float:射线对他人施加的物理力度")]
+    [SerializeField] float RayPushPower = 10f;//射线的物理力度
+    void V003_Interaction()
+    { 
+        if(Input.GetMouseButtonDown(0))//如果鼠标摁下以后   
+        { Debug.Log("鼠标左键摁下");//【DEBUG】
+          //Ray RAY_Mouse = Camera.main.ViewportPointToRay(Input.mousePosition);//鼠标点击的地方，创建射线
+          Ray RAY_Screen = Camera.main.ViewportPointToRay(new Vector3(0.5f,0.5f,0));//屏幕中心，创建射线 UI代表射线射出的位置
+          Debug.Log("射线被创建 于 屏幕中心");
+            if(Physics.Raycast(RAY_Screen, out RaycastHit HIT))
+            { Debug.Log("屏幕中心射线击中HIT");
+              Debug.Log($"射线击中了: {HIT.transform.name}");//debug一下，击中的是什么?
+              //Debug.Log("鼠标射线射出");
+              if(HIT.transform.CompareTag("MXXS_Physics"))
+              {   Debug.Log("撞击到Tag为MXXS_Physics的物体");
+                    //【想要销毁HIT】
+                    //Destroy(HIT.transform.gameObject);Debug.Log("HIT物体已经被销毁");
+                    //【想要给HIT变色】
+                    HIT.transform.GetComponent<MeshRenderer>().material.color = Color.cyan; Debug.Log("HIT物体的颜色已经被改变");
+                    //【想要推动物体】
+                    Rigidbody RB = HIT.transform.GetComponent<Rigidbody>();
+                   if (RB != null && !RB.isKinematic)
+                   {
+                    Vector3 forceDirection = HIT.point - RAY_Screen.origin;//计算受力的方向
+                    forceDirection.Normalize(); // 将方向向量标准化
+                    RB.AddForce(forceDirection * RayPushPower, ForceMode.Impulse);
+                    Debug.Log("HIT物体受到射线方向的力");
+                   } 
+               }else {Debug.Log($"射线击中的Tag为: {HIT.transform.tag}");}
+            }//[END](Physics.Raycast(RAY_Screen, out RaycastHit HIT))
+            else {Debug.Log("射线没有击中任何物体");}
+        }//[END] if(Input.GetMouseButtonDown(0))
+    }//[END] void V003_Interaction()
+
+    // /////////////////////////////////////////////
+   //Start is called before the first frame update
+    void Start()
+    {
+        CC=GetComponent<CharacterController>();//初始化调用到CC
+        Cursor.lockState = CursorLockMode.Locked;//锁定鼠标
+    }
+    // Update is called once per frame
+    void Update()
+    {
+        V001_CharacterController();//WASD移动
+        V002_MouseRotation();//鼠标视角旋转
+        V003_Interaction();//射线交互
+    }
+     /////////////////////////////////////////////////////////////////////
+}
